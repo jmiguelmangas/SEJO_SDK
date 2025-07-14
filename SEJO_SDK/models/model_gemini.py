@@ -1,10 +1,10 @@
-from SEJO_SDK.model import Model
+from SEJO_SDK.model import Model_client
 import google.generativeai as genai
 from typing import Iterator, Any
 
 """Gemini model implementation."""
 
-class GeminiModel(Model):
+class GeminiModel(Model_client):
     def __init__(self, api_key: str, model_name: str):
         """Initialize the Gemini model with API key and model name."""
         self.api_key = api_key

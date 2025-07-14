@@ -1,10 +1,10 @@
-from SEJO_SDK.model import Model
+from SEJO_SDK.model import Model_client
 from deepseek import DeepSeek
 from typing import Iterator, Any
 
 """DeepSeek model implementation."""
 
-class DeepSeekModel(Model):
+class DeepSeekModel(Model_client):
     def __init__(self, api_key: str, model_name: str):
         """Initialize the DeepSeek model with API key and model name."""
         self.api_key = api_key
@@ -38,4 +38,4 @@ class DeepSeekModel(Model):
             stream=True,
             **kwargs,
         ):
-            yield chunk.choices[0].delta.get("content", "") 
+            yield chunk.choices[0].delta.get("content", "")

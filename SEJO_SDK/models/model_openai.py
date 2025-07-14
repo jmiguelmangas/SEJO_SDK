@@ -1,9 +1,9 @@
-from SEJO_SDK.model import Model
+from SEJO_SDK.model import Model_client
 import openai
 
 """OpenAI model implementation."""
 
-class OpenAIModel(Model):
+class OpenAIModel(Model_client):
     def __init__(self, api_key: str, model_name: str):
         """Initialize the OpenAI model with API key and model name."""
         self.api_key = api_key

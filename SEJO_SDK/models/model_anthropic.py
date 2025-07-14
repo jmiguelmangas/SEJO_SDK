@@ -1,9 +1,9 @@
-from SEJO_SDK.model import Model
+from SEJO_SDK.model import Model_client
 from anthropic import Anthropic
 from typing import Iterator, Any
 
 
-class AnthropicModel(Model):
+class AnthropicModel(Model_client):
     def __init__(self, api_key: str, model_name: str):
         """Initialize the Anthropic model with API key and model name."""
         self.api_key = api_key
