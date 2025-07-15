@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "sejo-sdk"
+version = "0.1.0"
+description = "SEJO SDK"
+authors = ["Jose Miguel Mangas <jmiguelmangas@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/josemiguelmangas/sejo-sdk"
+repository = "https://github.com/josemiguelmangas/sejo-sdk"
+keywords = ["sejo", "sdk", "websocket", "chatbot"]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<4.0"
+requests = "^2.31.0"
+fastapi = "^0.104.1"
+pydantic = "^2.7.2"
+uvicorn = "^0.24.0"
+websocket-client = "^1.6.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.4"
+pytest-cov = "^5.5.0"
