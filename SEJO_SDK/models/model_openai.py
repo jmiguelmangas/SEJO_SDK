@@ -1,5 +1,6 @@
 from SEJO_SDK.model import Model_client
-import openai
+from openai import OpenAI
+from typing import Any, Iterator
 
 """OpenAI model implementation."""
 
@@ -8,11 +9,11 @@ class OpenAIModel(Model_client):
         """Initialize the OpenAI model with API key and model name."""
         self.api_key = api_key
         self.model_name = model_name
-        openai.api_key = api_key
+        self.client = OpenAI(api_key=api_key)
     
     def send_prompt(self, prompt: str, **kwargs: Any) -> str:
         """Send a prompt to the OpenAI model and return the response."""
-        response = openai.ChatCompletion.create(
+        response = self.client.chat.completions.create(
             model=self.model_name,
             messages=[
                 {
@@ -22,11 +23,11 @@ class OpenAIModel(Model_client):
             ],
             **kwargs,
         )
-        return response.choices[0].message.content
+        return response.choices[0].message.content or ""
     
     def stream_response(self, prompt: str, **kwargs: Any) -> Iterator[str]:
         """Send a prompt to the OpenAI model and return the response as a stream."""
-        for chunk in openai.ChatCompletion.create(
+        response = self.client.chat.completions.create(
             model=self.model_name,
             messages=[
                 {
@@ -36,5 +37,7 @@ class OpenAIModel(Model_client):
             ],
             stream=True,
             **kwargs,
-        ):
-            yield chunk.choices[0].delta.get("content", "")
+        )
+        for chunk in response:
+            content = chunk.choices[0].delta.content or ""
+            yield content
