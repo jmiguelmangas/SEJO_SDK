@@ -2,7 +2,13 @@
 
 from typing import Any, Optional
 
-from SEJO_SDK.messages import Message, ModelResponse, ToolCall, messages_to_prompt
+from SEJO_SDK.messages import (
+    Message,
+    ModelResponse,
+    ToolCall,
+    Usage,
+    messages_to_prompt,
+)
 
 
 def split_anthropic_messages(
@@ -62,8 +68,9 @@ def split_anthropic_messages(
     return "\n".join(system_parts) or None, provider_messages
 
 
-def parse_anthropic_response(content: Any) -> ModelResponse:
+def parse_anthropic_response(response: Any) -> ModelResponse:
     """Parse an Anthropic API response into a ModelResponse."""
+    content = getattr(response, "content", response)
     text_parts: list[str] = []
     tool_calls: list[ToolCall] = []
 
@@ -82,7 +89,17 @@ def parse_anthropic_response(content: Any) -> ModelResponse:
                 )
             )
 
-    return ModelResponse(content="".join(text_parts), tool_calls=tool_calls)
+    raw_usage = getattr(response, "usage", None)
+    usage = None
+    if raw_usage is not None:
+        usage = Usage(
+            input_tokens=getattr(raw_usage, "input_tokens", 0),
+            output_tokens=getattr(raw_usage, "output_tokens", 0),
+        )
+
+    return ModelResponse(
+        content="".join(text_parts), tool_calls=tool_calls, usage=usage
+    )
 
 
 def tools_to_anthropic(tools: list[dict[str, Any]]) -> list[dict[str, Any]]:

@@ -6,7 +6,10 @@ from typing import Any, Optional, Union
 from SEJO_SDK.errors import ProviderDependencyError
 from SEJO_SDK.messages import Message, ModelResponse, user_message
 from SEJO_SDK.model import AsyncModelClient, ModelClient
-from SEJO_SDK.models.openai_compat import messages_to_openai, parse_chat_message
+from SEJO_SDK.models.openai_compat import (
+    messages_to_openai,
+    parse_chat_completion,
+)
 
 
 class OpenAIModel(ModelClient):
@@ -40,7 +43,7 @@ class OpenAIModel(ModelClient):
             messages=messages_to_openai(messages),
             **kwargs,
         )
-        return parse_chat_message(response.choices[0].message)
+        return parse_chat_completion(response)
 
     def stream_response(self, prompt: str, **kwargs: Any) -> Iterator[str]:
         """Send a prompt to the OpenAI model and return the response as a stream."""
@@ -96,7 +99,7 @@ class AsyncOpenAIModel(AsyncModelClient):
             messages=messages_to_openai(messages),
             **kwargs,
         )
-        return parse_chat_message(response.choices[0].message)
+        return parse_chat_completion(response)
 
     async def stream_response(self, prompt: str, **kwargs: Any) -> AsyncIterator[str]:
         """Send a prompt to the OpenAI model and return the response as a stream."""

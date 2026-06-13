@@ -75,11 +75,24 @@ class ToolCall:
 
 
 @dataclass
+class Usage:
+    """Token usage reported by a provider."""
+
+    input_tokens: int = 0
+    output_tokens: int = 0
+
+    @property
+    def total_tokens(self) -> int:
+        return self.input_tokens + self.output_tokens
+
+
+@dataclass
 class ModelResponse:
     """A model response that may request local tool calls."""
 
     content: str = ""
     tool_calls: list[ToolCall] = field(default_factory=list)
+    usage: Optional[Usage] = None
 
     def to_dict(self) -> dict[str, Any]:
         return {

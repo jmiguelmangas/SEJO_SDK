@@ -56,7 +56,7 @@ class AnthropicModel(ModelClient):
             messages=provider_messages,
             **kwargs,
         )
-        return parse_anthropic_response(response.content)
+        return parse_anthropic_response(response)
 
     def stream_response(self, prompt: str, **kwargs: Any) -> Iterator[str]:
         """Send a prompt to the Anthropic model and return the response as a stream."""
@@ -131,7 +131,7 @@ class AsyncAnthropicModel(AsyncModelClient):
             messages=provider_messages,
             **kwargs,
         )
-        return parse_anthropic_response(response.content)
+        return parse_anthropic_response(response)
 
     async def stream_response(self, prompt: str, **kwargs: Any) -> AsyncIterator[str]:
         """Send a prompt to the Anthropic model and return the response as a stream."""

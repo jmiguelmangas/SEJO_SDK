@@ -3,11 +3,34 @@
 import json
 from typing import Any, Union
 
-from SEJO_SDK.messages import Message, ModelResponse, ToolCall
+from SEJO_SDK.messages import Message, ModelResponse, ToolCall, Usage
 
 
 def messages_to_openai(messages: list[Message]) -> list[dict[str, Any]]:
     return [message.to_dict() for message in messages]
+
+
+def parse_chat_completion(completion: Any) -> Union[str, ModelResponse]:
+    """Parse an OpenAI chat completion object into text or a typed response."""
+    message = completion.choices[0].message
+    raw_usage = getattr(completion, "usage", None)
+    usage = None
+    if raw_usage is not None:
+        usage = Usage(
+            input_tokens=getattr(raw_usage, "prompt_tokens", 0),
+            output_tokens=getattr(raw_usage, "completion_tokens", 0),
+        )
+    tool_calls = getattr(message, "tool_calls", None) or []
+    if not tool_calls:
+        content = getattr(message, "content", None) or ""
+        if usage:
+            return ModelResponse(content=content, usage=usage)
+        return content
+    return ModelResponse(
+        content=getattr(message, "content", None) or "",
+        tool_calls=[parse_tool_call(tc) for tc in tool_calls],
+        usage=usage,
+    )
 
 
 def parse_chat_message(message: Any) -> Union[str, ModelResponse]:
