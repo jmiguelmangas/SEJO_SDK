@@ -20,18 +20,31 @@ need.
 
 ## Features
 
-- Unified `ModelClient` interface for provider adapters.
-- Sync and async model clients for supported providers.
-- Agent runtime with conversation memory.
-- Native `send_messages` and `stream_messages` — full message history passed to providers, not just a rendered prompt string.
-- System prompts on `Agent` applied automatically to every turn.
-- Streaming and non-streaming responses.
-- Tool schemas and local tool execution helpers.
-- Tool-calling loops for sync and async agents.
-- Native tool calling for OpenAI, DeepSeek and **Anthropic** — schemas converted automatically, `tool_use` blocks parsed into typed `ToolCall` objects, results serialised as `tool_result` content blocks.
-- Optional provider extras for OpenAI, Anthropic, Gemini and DeepSeek.
-- Optional tools for web search, PostgreSQL and FastAPI WebSocket chat.
-- Tests that run without API keys or live provider calls.
+- Unified `ModelClient` interface — one API for all providers.
+- Sync **and** async model clients for every supported provider.
+- Agent runtime with conversation `Memory`.
+- Native `send_messages` / `stream_messages` — full message history, not a rendered string.
+- System prompts applied automatically to every turn.
+- Native tool calling for **OpenAI, Anthropic, Gemini and Bedrock (Claude)**.
+- `RetryModel` / `FallbackModel` — exponential back-off and provider chaining.
+- `PromptTemplate` — named variable substitution for reusable prompts.
+- `run_structured()` — Pydantic-validated responses from any agent.
+- Built-in tracing and cost estimation (`Tracer`).
+- Session store: `InMemorySessionStore`, `PostgresSessionStore`, `RedisSessionStore`.
+- `create_agent_app()` — FastAPI server with REST + WebSocket endpoints.
+- **Multi-agent**: `agent.as_tool()` wraps any agent as a tool; `agent.delegate()` for direct sub-agent calls.
+- **Evals**: `EvalSuite` runs a test dataset against an agent with built-in scorers (`exact_match`, `contains`, `contains_all`, `llm_judge`).
+- Tests run without API keys or live provider calls.
+
+## Provider support
+
+| Provider | send_messages | tool calling | streaming |
+|---|---|---|---|
+| OpenAI / DeepSeek | ✅ | ✅ native | ✅ |
+| Anthropic | ✅ | ✅ native | ✅ |
+| Gemini | ✅ | ✅ native | ✅ |
+| AWS Bedrock (Claude) | ✅ | ✅ native | ✅ |
+| AWS Bedrock (Titan/Llama/Mistral) | ✅ | — | ✅ |
 
 ## Installation
 
@@ -47,9 +60,13 @@ Install provider extras as needed:
 pip install "sejo-sdk[openai]"
 pip install "sejo-sdk[anthropic]"
 pip install "sejo-sdk[gemini]"
+pip install "sejo-sdk[bedrock]"
 pip install "sejo-sdk[websearch]"
 pip install "sejo-sdk[postgres]"
+pip install "sejo-sdk[redis]"
 pip install "sejo-sdk[server]"
+pip install "sejo-sdk[structured]"   # Pydantic structured outputs
+pip install "sejo-sdk[all]"          # everything
 ```
 
 For local development:

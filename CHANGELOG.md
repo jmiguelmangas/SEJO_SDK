@@ -8,6 +8,34 @@ The project follows semantic versioning.
 
 ### Added
 
+- **RedisSessionStore** — session persistence backed by Redis with optional TTL;
+  injectable client for testing without a live Redis instance.
+- **EvalSuite / EvalReport** — dataset-based agent evaluation framework with
+  built-in scorers (`exact_match`, `contains`, `contains_all`, `llm_judge`).
+- **PostgresSessionStore** — session persistence backed by PostgreSQL; table
+  auto-created on first use; injectable connection factory for testing.
+- **Multi-agent**: `Agent.as_tool()` wraps any agent as a `Tool` so an
+  orchestrator can call it natively in `run_with_tools`; `Agent.delegate()`
+  and `adelegate()` for direct sub-agent invocation.
+- **Gemini native tool calling** — `messages_to_gemini_contents`,
+  `tools_to_gemini` and `parse_gemini_response` adapters; `GeminiModel` now
+  passes tool schemas to the API and parses `function_call` parts in responses.
+- **PromptTemplate** — named variable substitution with `render(**kwargs)`;
+  `dedent_template` helper for triple-quoted prompts.
+- **RetryModel / AsyncRetryModel** — transparent retry with exponential
+  back-off around any `ModelClient`.
+- **FallbackModel / AsyncFallbackModel** — tries providers in order, returning
+  the first successful response.
+- **Structured outputs** — `agent.run_structured(prompt, Schema)` and
+  `parse_structured(text, Schema)` for Pydantic-validated model responses.
+- **Tracer** — per-turn token accounting and cost estimation (opt-in via
+  `Agent(tracer=Tracer(model_name=...))`).
+- **InMemorySessionStore** — in-process session management with `create`,
+  `get`, `get_or_create`, `save`, `delete` and `list_sessions`.
+- **`create_agent_app()`** — FastAPI server factory with REST (`POST /chat`)
+  and WebSocket (`/ws/{session_id}`) endpoints.
+- **AWS Bedrock connector** — `BedrockModel` and `AsyncBedrockModel` supporting
+  Claude, Titan, Llama and Mistral families; native tool calling for Claude.
 - Async model interface and async provider adapters.
 - Typed messages, tool calls and model responses.
 - Native `send_messages` support and agent system prompts.
