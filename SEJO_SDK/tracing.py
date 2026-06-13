@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any
 
 from SEJO_SDK.messages import Usage
 
@@ -37,7 +37,7 @@ class Turn:
     input: str
     output: str
     tool_calls: list[str] = field(default_factory=list)
-    usage: Optional[Usage] = None
+    usage: Usage | None = None
     duration_ms: float = 0.0
     cost_usd: float = 0.0
 
@@ -92,13 +92,13 @@ class Tracer:
 
     def __init__(
         self,
-        model_name: Optional[str] = None,
-        prices: Optional[dict[str, dict[str, float]]] = None,
+        model_name: str | None = None,
+        prices: dict[str, dict[str, float]] | None = None,
     ):
         self.model_name = model_name
         self._prices = prices or _DEFAULT_PRICES
         self._turns: list[Turn] = []
-        self._start: Optional[float] = None
+        self._start: float | None = None
 
     # -- context manager for timing a turn --
 
@@ -110,8 +110,8 @@ class Tracer:
         role: str,
         input_text: str,
         output_text: str,
-        tool_calls: Optional[list[str]] = None,
-        usage: Optional[Usage] = None,
+        tool_calls: list[str] | None = None,
+        usage: Usage | None = None,
     ) -> Turn:
         duration_ms = (time.monotonic() - (self._start or time.monotonic())) * 1000
         cost = self._estimate_cost(usage)
@@ -157,7 +157,7 @@ class Tracer:
     def reset(self) -> None:
         self._turns.clear()
 
-    def _estimate_cost(self, usage: Optional[Usage]) -> float:
+    def _estimate_cost(self, usage: Usage | None) -> float:
         if usage is None or self.model_name is None:
             return 0.0
         price = self._prices.get(self.model_name)

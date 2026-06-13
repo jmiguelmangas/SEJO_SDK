@@ -5,7 +5,7 @@ from __future__ import annotations
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Optional
+from typing import Any
 
 from SEJO_SDK.memory import Memory
 
@@ -46,8 +46,8 @@ class InMemorySessionStore:
 
     def create(
         self,
-        session_id: Optional[str] = None,
-        metadata: Optional[dict[str, Any]] = None,
+        session_id: str | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> Session:
         sid = session_id or str(uuid.uuid4())
         session = Session(
@@ -58,13 +58,13 @@ class InMemorySessionStore:
         self._sessions[sid] = session
         return session
 
-    def get(self, session_id: str) -> Optional[Session]:
+    def get(self, session_id: str) -> Session | None:
         return self._sessions.get(session_id)
 
     def get_or_create(
         self,
         session_id: str,
-        metadata: Optional[dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> Session:
         session = self.get(session_id)
         if session is None:

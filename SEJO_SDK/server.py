@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 from SEJO_SDK.errors import ProviderDependencyError
 
@@ -15,11 +15,11 @@ if TYPE_CHECKING:
 
 
 def create_agent_app(
-    model: Union[ModelClient, AsyncModelClient],
-    tools: Optional[Union[dict[str, Tool], Iterable[Tool]]] = None,
-    session_store: Optional[InMemorySessionStore] = None,
-    system_prompt: Optional[str] = None,
-    tracer: Optional[Tracer] = None,
+    model: ModelClient | AsyncModelClient,
+    tools: dict[str, Tool] | Iterable[Tool] | None = None,
+    session_store: InMemorySessionStore | None = None,
+    system_prompt: str | None = None,
+    tracer: Tracer | None = None,
     title: str = "SEJO Agent",
 ) -> Any:
     """Return a FastAPI application that exposes the agent over HTTP and WebSocket.
@@ -50,7 +50,7 @@ def create_agent_app(
 
     class ChatRequest(BaseModel):
         message: str
-        session_id: Optional[str] = None
+        session_id: str | None = None
 
     def _agent_for_session(session_id: str) -> Agent:
         session = store.get_or_create(session_id)
