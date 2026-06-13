@@ -5,6 +5,7 @@ from collections.abc import Iterable
 from typing import Any, Optional, TypeVar, Union
 
 from SEJO_SDK.errors import ToolExecutionError, ToolNotFoundError
+from SEJO_SDK.hooks import HookRegistry
 from SEJO_SDK.memory import Memory
 from SEJO_SDK.messages import (
     Message,
@@ -28,6 +29,7 @@ class Agent:
         tools: Optional[Union[dict[str, Tool], Iterable[Tool]]] = None,
         system_prompt: Optional[str] = None,
         tracer: Optional[Tracer] = None,
+        hooks: Optional[HookRegistry] = None,
     ):
         """Initialize the agent with a model, optional memory and optional tools."""
         self.model = model
@@ -35,43 +37,78 @@ class Agent:
         self.tools = self._normalize_tools(tools)
         self.system_prompt = system_prompt
         self.tracer = tracer
+        self.hooks = hooks
 
     def run(self, user_input: str) -> str:
         """Run the agent with a prompt and return the response."""
+        ctx: Optional[dict] = None
+        if self.hooks:
+            ctx = self.hooks._next_ctx(self, user_input)
+            t0 = self.hooks.start_timer()
+            self.hooks.fire_start(ctx)
         self.memory.add_user_message(user_input)
         if self.tracer:
             self.tracer.start_turn()
-        raw = self.model.send_messages(self._build_messages())
-        model_response = self._coerce_model_response(raw)
-        content = model_response.content
-        self.memory.add_ai_message(content)
-        if self.tracer:
-            self.tracer.end_turn(
-                role="assistant",
-                input_text=user_input,
-                output_text=content,
-                usage=model_response.usage,
-            )
+        error: Optional[Exception] = None
+        content = ""
+        try:
+            raw = self.model.send_messages(self._build_messages())
+            model_response = self._coerce_model_response(raw)
+            content = model_response.content
+            self.memory.add_ai_message(content)
+            if self.tracer:
+                self.tracer.end_turn(
+                    role="assistant",
+                    input_text=user_input,
+                    output_text=content,
+                    usage=model_response.usage,
+                )
+        except Exception as exc:
+            error = exc
+            raise
+        finally:
+            if self.hooks and ctx is not None:
+                ctx["output"] = content
+                ctx["duration_ms"] = self.hooks.elapsed_ms(t0)
+                ctx["error"] = str(error) if error else None
+                self.hooks.fire_end(ctx)
         return content
 
     async def arun(self, user_input: str) -> str:
         """Run the agent asynchronously with a prompt and return the response."""
         if not isinstance(self.model, AsyncModelClient):
             raise TypeError("Agent.arun requires an AsyncModelClient model.")
+        ctx: Optional[dict] = None
+        if self.hooks:
+            ctx = self.hooks._next_ctx(self, user_input)
+            t0 = self.hooks.start_timer()
+            await self.hooks.async_fire_start(ctx)
         self.memory.add_user_message(user_input)
         if self.tracer:
             self.tracer.start_turn()
-        raw = await self.model.send_messages(self._build_messages())
-        model_response = self._coerce_model_response(raw)
-        content = model_response.content
-        self.memory.add_ai_message(content)
-        if self.tracer:
-            self.tracer.end_turn(
-                role="assistant",
-                input_text=user_input,
-                output_text=content,
-                usage=model_response.usage,
-            )
+        error: Optional[Exception] = None
+        content = ""
+        try:
+            raw = await self.model.send_messages(self._build_messages())
+            model_response = self._coerce_model_response(raw)
+            content = model_response.content
+            self.memory.add_ai_message(content)
+            if self.tracer:
+                self.tracer.end_turn(
+                    role="assistant",
+                    input_text=user_input,
+                    output_text=content,
+                    usage=model_response.usage,
+                )
+        except Exception as exc:
+            error = exc
+            raise
+        finally:
+            if self.hooks and ctx is not None:
+                ctx["output"] = content
+                ctx["duration_ms"] = self.hooks.elapsed_ms(t0)
+                ctx["error"] = str(error) if error else None
+                await self.hooks.async_fire_end(ctx)
         return content
 
     def run_with_tools(self, user_input: str, max_tool_iterations: int = 5) -> str:

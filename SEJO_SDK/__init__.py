@@ -1,6 +1,7 @@
 """SEJO SDK public API."""
 
 from SEJO_SDK.agent import Agent
+from SEJO_SDK.cache import CachedModel, openai_embedder
 from SEJO_SDK.errors import (
     ProviderDependencyError,
     ProviderResponseError,
@@ -18,6 +19,8 @@ from SEJO_SDK.evals import (
     exact_match,
     llm_judge,
 )
+from SEJO_SDK.hooks import HookRegistry
+from SEJO_SDK.mcp_client import MCPClient
 from SEJO_SDK.memory import Memory
 from SEJO_SDK.messages import (
     Message,
@@ -49,6 +52,7 @@ from SEJO_SDK.sessions import (
     Session,
     SessionStore,
 )
+from SEJO_SDK.sessions_async import AsyncPostgresSessionStore, AsyncRedisSessionStore
 from SEJO_SDK.sessions_redis import RedisSessionStore
 from SEJO_SDK.structured import parse_structured, schema_prompt
 from SEJO_SDK.tools import Tool
@@ -56,6 +60,12 @@ from SEJO_SDK.tracing import Tracer, TraceSummary, Turn
 
 __all__ = [
     "Agent",
+    "AsyncPostgresSessionStore",
+    "AsyncRedisSessionStore",
+    "CachedModel",
+    "HookRegistry",
+    "MCPClient",
+    "openai_embedder",
     "AsyncModelClient",
     "AsyncModel_client",
     "Memory",
