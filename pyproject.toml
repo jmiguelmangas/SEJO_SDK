@@ -34,8 +34,10 @@ gemini = ["google-generativeai>=0.8.0"]
 websearch = ["duckduckgo-search>=6.0.0"]
 postgres = ["psycopg2-binary>=2.9.0"]
 server = ["fastapi>=0.104.0", "uvicorn>=0.24.0"]
+bedrock = ["boto3>=1.34.0"]
 all = [
   "anthropic>=0.34.0",
+  "boto3>=1.34.0",
   "duckduckgo-search>=6.0.0",
   "fastapi>=0.104.0",
   "google-generativeai>=0.8.0",
