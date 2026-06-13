@@ -103,7 +103,7 @@ class Agent:
         """Run the agent and yield streaming response chunks."""
         self.memory.add_user_message(user_input)
         chunks = []
-        for chunk in self.model.stream_response(self._build_prompt()):
+        for chunk in self.model.stream_messages(self._build_messages()):
             chunks.append(chunk)
             yield chunk
         self.memory.add_ai_message("".join(chunks))
@@ -114,7 +114,7 @@ class Agent:
             raise TypeError("Agent.astream requires an AsyncModelClient model.")
         self.memory.add_user_message(user_input)
         chunks = []
-        async for chunk in self.model.stream_response(self._build_prompt()):
+        async for chunk in self.model.stream_messages(self._build_messages()):
             chunks.append(chunk)
             yield chunk
         self.memory.add_ai_message("".join(chunks))
@@ -138,9 +138,6 @@ class Agent:
     def tool_schemas(self) -> list[dict]:
         """Return provider-friendly tool schemas."""
         return [tool.to_schema() for tool in self.tools.values()]
-
-    def _build_prompt(self) -> str:
-        return f"{self.memory.get_context()}\nAgent:"
 
     def _build_messages(self) -> list[Message]:
         messages = self.memory.get_messages()

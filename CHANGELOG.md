@@ -21,6 +21,11 @@ The project follows semantic versioning.
   content blocks.
 - `assistant_message_with_tools` helper to preserve tool call context in memory.
 - `Message.tool_calls` field for round-tripping assistant tool-use turns.
+- `ModelClient.stream_messages` and `AsyncModelClient.stream_messages` — stream
+  a response from a list of `Message` objects. Custom adapters that only
+  implement `stream_response` inherit a prompt-rendering fallback.
+- `Agent.stream` and `astream` now use `stream_messages` so system prompts and
+  full conversation history are passed natively.
 
 ### Changed
 
