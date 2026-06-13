@@ -1,3 +1,6 @@
+# MkDocs generated site
+site/
+
 # Environment variables
 .env
 

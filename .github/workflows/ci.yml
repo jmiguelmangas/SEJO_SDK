@@ -27,3 +27,15 @@ jobs:
 
       - name: Run tests
         run: pytest --cov=SEJO_SDK --cov-report=term-missing
+
+      - name: Compile Python files
+        run: python -m compileall SEJO_SDK tests examples
+
+      - name: Build docs
+        run: mkdocs build --strict
+
+      - name: Build package
+        run: python -m build
+
+      - name: Check package metadata
+        run: twine check dist/*

@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security reports
+    url: mailto:jmiguelmangas@gmail.com
+    about: Please report sensitive security issues by email.

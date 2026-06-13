@@ -1,0 +1,38 @@
+site_name: SEJO SDK
+site_description: A lightweight Python SDK for provider-agnostic AI agents.
+repo_url: https://github.com/jmiguelmangas/SEJO_SDK
+repo_name: jmiguelmangas/SEJO_SDK
+docs_dir: docs
+exclude_docs: |
+  README.md
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - search.suggest
+    - search.highlight
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Core Concepts: concepts.md
+  - Guides:
+      - Sync Agents: guides/sync-agents.md
+      - Async Agents: guides/async-agents.md
+      - Native Messages: guides/native-messages.md
+      - Tools: guides/tools.md
+  - Providers: providers.md
+  - Memory: memory.md
+  - Errors: errors.md
+  - CLI: cli.md
+  - API Reference: api-reference.md
+  - Examples: examples.md
+  - Testing: testing.md
+  - Release Checklist: release-checklist.md
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences
