@@ -1,5 +1,6 @@
 """Agent implementation."""
 
+import asyncio
 import json
 from collections.abc import Iterable
 from typing import Any, Optional, TypeVar, Union
@@ -299,6 +300,70 @@ class Agent:
                 "required": [param],
             },
         )
+
+    def batch(self, inputs: list[str]) -> list[str]:
+        """Run multiple prompts sequentially and return all responses."""
+        return [self.run(inp) for inp in inputs]
+
+    async def abatch(
+        self,
+        inputs: list[str],
+        max_concurrency: int = 5,
+    ) -> list[str]:
+        """Run multiple prompts concurrently and return responses in order.
+
+        Args:
+            inputs:          List of user prompts.
+            max_concurrency: Maximum number of simultaneous model calls.
+        """
+        sem = asyncio.Semaphore(max_concurrency)
+
+        async def _one(prompt: str) -> str:
+            async with sem:
+                # Each batch item needs its own memory to avoid cross-contamination
+                from SEJO_SDK.memory import Memory
+                tmp_agent = Agent(
+                    model=self.model,
+                    memory=Memory(),
+                    tools=self.tools,
+                    system_prompt=self.system_prompt,
+                )
+                return await tmp_agent.arun(prompt)
+
+        return list(await asyncio.gather(*[_one(inp) for inp in inputs]))
+
+    def stream_with_tools(self, user_input: str, max_tool_iterations: int = 5):
+        """Stream a tool-calling loop, yielding text chunks as they arrive.
+
+        Tool execution results are not streamed — only the final text
+        response after all tool calls are resolved is streamed.
+        """
+        self.memory.add_user_message(user_input)
+        for _ in range(max_tool_iterations):
+            response = self.model.send_messages(
+                self._build_messages(),
+                tools=self.tool_schemas(),
+            )
+            model_response = self._coerce_model_response(response)
+            if not model_response.tool_calls:
+                # Stream the final answer
+                self.memory.clear()
+                self.memory.add_user_message(user_input)
+                chunks = []
+                for chunk in self.model.stream_messages(self._build_messages()):
+                    chunks.append(chunk)
+                    yield chunk
+                self.memory.add_ai_message("".join(chunks))
+                return
+            self._store_assistant_tool_request(model_response)
+            for tool_call in model_response.tool_calls:
+                result = self.run_tool(tool_call.name, **tool_call.arguments)
+                self.memory.add_tool_message(
+                    name=tool_call.name,
+                    content=self._serialize_tool_result(result),
+                    tool_call_id=tool_call.id,
+                )
+        raise RuntimeError("Maximum tool-calling iterations exceeded.")
 
     def delegate(self, other: "Agent", task: str) -> str:
         """Directly run a task on another agent and return its response."""

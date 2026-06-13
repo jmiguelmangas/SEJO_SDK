@@ -22,6 +22,11 @@ from SEJO_SDK.evals import (
 from SEJO_SDK.hooks import HookRegistry
 from SEJO_SDK.mcp_client import MCPClient
 from SEJO_SDK.memory import Memory
+from SEJO_SDK.memory_strategies import (
+    SlidingWindowMemory,
+    SummarizationMemory,
+    VectorMemory,
+)
 from SEJO_SDK.messages import (
     Message,
     ModelResponse,
@@ -56,6 +61,7 @@ from SEJO_SDK.sessions_async import AsyncPostgresSessionStore, AsyncRedisSession
 from SEJO_SDK.sessions_redis import RedisSessionStore
 from SEJO_SDK.structured import parse_structured, schema_prompt
 from SEJO_SDK.tools import Tool
+from SEJO_SDK.tools.decorators import tool
 from SEJO_SDK.tracing import Tracer, TraceSummary, Turn
 
 __all__ = [
@@ -66,6 +72,10 @@ __all__ = [
     "HookRegistry",
     "MCPClient",
     "openai_embedder",
+    "SlidingWindowMemory",
+    "SummarizationMemory",
+    "VectorMemory",
+    "tool",
     "AsyncModelClient",
     "AsyncModel_client",
     "Memory",
