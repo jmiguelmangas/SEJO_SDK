@@ -26,7 +26,15 @@ from SEJO_SDK.model import (
     Model_client,
     ModelClient,
 )
+from SEJO_SDK.prompts import PromptTemplate, dedent_template
+from SEJO_SDK.resilience import (
+    AsyncFallbackModel,
+    AsyncRetryModel,
+    FallbackModel,
+    RetryModel,
+)
 from SEJO_SDK.sessions import InMemorySessionStore, Session, SessionStore
+from SEJO_SDK.structured import parse_structured, schema_prompt
 from SEJO_SDK.tools import Tool
 from SEJO_SDK.tracing import Tracer, TraceSummary, Turn
 
@@ -58,4 +66,12 @@ __all__ = [
     "Session",
     "SessionStore",
     "InMemorySessionStore",
+    "PromptTemplate",
+    "dedent_template",
+    "RetryModel",
+    "AsyncRetryModel",
+    "FallbackModel",
+    "AsyncFallbackModel",
+    "parse_structured",
+    "schema_prompt",
 ]

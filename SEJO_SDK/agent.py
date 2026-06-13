@@ -2,7 +2,7 @@
 
 import json
 from collections.abc import Iterable
-from typing import Any, Optional, Union
+from typing import Any, Optional, TypeVar, Union
 
 from SEJO_SDK.errors import ToolExecutionError, ToolNotFoundError
 from SEJO_SDK.memory import Memory
@@ -16,6 +16,8 @@ from SEJO_SDK.messages import (
 from SEJO_SDK.model import AsyncModelClient, ModelClient
 from SEJO_SDK.tools import Tool
 from SEJO_SDK.tracing import Tracer
+
+T = TypeVar("T")
 
 
 class Agent:
@@ -171,6 +173,33 @@ class Agent:
                     tool_call_id=tool_call.id,
                 )
         raise RuntimeError("Maximum tool-calling iterations exceeded.")
+
+    def run_structured(self, user_input: str, schema: "type[T]") -> "T":
+        """Run the agent and parse the response into a Pydantic model.
+
+        The schema is appended to the prompt as a JSON instruction.
+
+        Example::
+
+            class FlightInfo(BaseModel):
+                flight: str
+                destination: str
+
+            info = agent.run_structured("Extract flight BA123 to LHR", FlightInfo)
+        """
+        from SEJO_SDK.structured import parse_structured, schema_prompt
+
+        full_input = user_input + schema_prompt(schema)
+        text = self.run(full_input)
+        return parse_structured(text, schema)
+
+    async def arun_structured(self, user_input: str, schema: "type[T]") -> "T":
+        """Async version of run_structured."""
+        from SEJO_SDK.structured import parse_structured, schema_prompt
+
+        full_input = user_input + schema_prompt(schema)
+        text = await self.arun(full_input)
+        return parse_structured(text, schema)
 
     def stream(self, user_input: str):
         """Run the agent and yield streaming response chunks."""
