@@ -1,26 +1,20 @@
 """Web search tool implementation using DuckDuckGo search."""
 
-from typing import List, Dict, Any, Optional
-import json
-from duckduckgo_search import DDGS
-from SEJO_SDK.tools import Tool
+from typing import Any, Optional
+
+from SEJO_SDK.errors import ProviderDependencyError
+from SEJO_SDK.tools.base import Tool
 
 
 class WebSearchTool(Tool):
-    """A tool for performing web searches using DuckDuckGo.
-    
-    This tool allows performing web searches and retrieving results in a structured format.
-    It includes features like limiting the number of results, filtering by region and time.
-    """
-    
-    def __init__(self, max_results: int = 5, region: str = 'wt-wt', timelimit: Optional[str] = None):
-        """Initialize the WebSearchTool.
-        
-        Args:
-            max_results: Maximum number of search results to return (default: 5)
-            region: Region code for search results (default: 'wt-wt' for worldwide)
-            timelimit: Time period to search (e.g., 'd' for day, 'w' for week, 'm' for month)
-        """
+    """Tool for performing web searches using DuckDuckGo."""
+
+    def __init__(
+        self,
+        max_results: int = 5,
+        region: str = "wt-wt",
+        timelimit: Optional[str] = None,
+    ):
         super().__init__(
             name="web_search",
             description=(
@@ -28,68 +22,52 @@ class WebSearchTool(Tool):
                 "Input should be a search query string. "
                 f"Returns up to {max_results} search results."
             ),
-            func=self.run
+            func=self.run,
         )
         self.max_results = max_results
         self.region = region
         self.timelimit = timelimit
-    
+
     def run(self, query: str) -> str:
-        """Execute a web search and return formatted results.
-        
-        Args:
-            query: The search query string
-            
-        Returns:
-            str: Formatted search results or error message
-        """
+        """Execute a web search and return formatted results."""
         try:
             results = self._search_web(query)
             return self._format_results(results)
-        except Exception as e:
-            return f"Error performing web search: {str(e)}"
-    
-    def _search_web(self, query: str) -> List[Dict[str, Any]]:
-        """Perform the actual web search.
-        
-        Args:
-            query: The search query string
-            
-        Returns:
-            List of search result dictionaries
-        """
+        except Exception as exc:
+            return f"Error performing web search: {str(exc)}"
+
+    def _search_web(self, query: str) -> list[dict[str, Any]]:
+        try:
+            from duckduckgo_search import DDGS
+        except ImportError as exc:
+            raise ProviderDependencyError(
+                "Install web search support with `pip install sejo-sdk[websearch]`."
+            ) from exc
+
         with DDGS() as ddgs:
             return [
                 {
-                    'title': r.get('title', ''),
-                    'url': r.get('href', ''),
-                    'snippet': r.get('body', '')
+                    "title": result.get("title", ""),
+                    "url": result.get("href", ""),
+                    "snippet": result.get("body", ""),
                 }
-                for r in ddgs.text(
+                for result in ddgs.text(
                     query,
                     max_results=self.max_results,
                     region=self.region,
-                    timelimit=self.timelimit
+                    timelimit=self.timelimit,
                 )
             ]
-    
+
     @staticmethod
-    def _format_results(results: List[Dict[str, str]]) -> str:
-        """Format search results into a readable string.
-        
-        Args:
-            results: List of search result dictionaries
-            
-        Returns:
-            Formatted string with search results
-        """
+    def _format_results(results: list[dict[str, str]]) -> str:
         if not results:
             return "No results found."
-            
+
         formatted = []
-        for i, result in enumerate(results, 1):
+        for index, result in enumerate(results, 1):
             formatted.append(
-                f"{i}. {result.get('title', 'No title')}\n"
+                f"{index}. {result.get('title', 'No title')}\n"
                 f"   URL: {result.get('url', 'No URL')}\n"
                 f"   {result.get('snippet', 'No description')}\n"
             )
@@ -97,12 +75,6 @@ class WebSearchTool(Tool):
 
 
 def create_web_search_tool(**kwargs) -> WebSearchTool:
-    """Create and return a configured WebSearchTool instance.
-    
-    Args:
-        **kwargs: Arguments to pass to WebSearchTool constructor
-        
-    Returns:
-        Configured WebSearchTool instance
-    """
+    """Create and return a configured WebSearchTool instance."""
+
     return WebSearchTool(**kwargs)

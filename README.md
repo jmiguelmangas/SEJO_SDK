@@ -1,90 +1,134 @@
 # SEJO SDK
 
+[![SEJO SDK CI](https://github.com/jmiguelmangas/SEJO_SDK/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/jmiguelmangas/SEJO_SDK/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/Python-3.9+-3776AB?logo=python&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-0F766E)
+![Status](https://img.shields.io/badge/Status-alpha-F59E0B)
+![LLM Providers](https://img.shields.io/badge/Providers-OpenAI%20%7C%20Anthropic%20%7C%20Gemini%20%7C%20DeepSeek-111827)
+
 <p align="center">
-  <img src="SEJO_SDK/logo/Sejo_logo.png" alt="SEJO SDK Logo" width="300">
+  <img src="SEJO_SDK/logo/Sejo_logo.png" alt="SEJO SDK Logo" width="260">
 </p>
 
-## 🚀 Descripción
+SEJO SDK is a lightweight Python SDK for building provider-agnostic AI agents.
+It gives you one small interface for model adapters, conversation memory,
+streaming responses and optional tools.
 
-SEJO SDK es una biblioteca Python moderna y versátil que proporciona una interfaz unificada para trabajar con diferentes modelos de lenguaje AI. Con SEJO SDK, puedes interactuar con OpenAI, Anthropic, Google Gemini y DeepSeek de manera sencilla y consistente.
+The project is currently alpha, but the core package is designed to be
+installable without pulling every provider dependency. Add only the extras you
+need.
 
-## 🎯 Características Principales
+## Features
 
-- 🔒 Interfaz unificada para múltiples proveedores de IA
-- 🤖 Implementación de agentes inteligentes
-- 🧠 Sistema de memoria contextual
-- 🛠️ Soporte para herramientas integradas
-- 🔧 Configurable y extensible
-- 📚 Documentación completa
+- Unified `ModelClient` interface for provider adapters.
+- Agent runtime with conversation memory.
+- Streaming and non-streaming responses.
+- Optional provider extras for OpenAI, Anthropic, Gemini and DeepSeek.
+- Optional tools for web search, PostgreSQL and FastAPI WebSocket chat.
+- Tests that run without API keys or live provider calls.
 
-## 📦 Requisitos
+## Installation
 
-- Python 3.8 o superior
-- Dependencias específicas para cada modelo (OpenAI, Anthropic, etc.)
-
-## 📋 Instalación
+Install the core package:
 
 ```bash
 pip install sejo-sdk
 ```
 
-## 📚 Uso Básico
+Install provider extras as needed:
+
+```bash
+pip install "sejo-sdk[openai]"
+pip install "sejo-sdk[anthropic]"
+pip install "sejo-sdk[gemini]"
+pip install "sejo-sdk[websearch]"
+pip install "sejo-sdk[postgres]"
+pip install "sejo-sdk[server]"
+```
+
+For local development:
+
+```bash
+python -m pip install -e ".[dev]"
+pytest
+ruff check .
+```
+
+## Basic Usage
 
 ```python
-from SEJO_SDK.model import OpenAIModel
 from SEJO_SDK.agent import Agent
+from SEJO_SDK.models import OpenAIModel
 
-# Configurar el modelo
 model = OpenAIModel(
-    api_key="tu_api_key",
-    model_name="gpt-4"
+    api_key="your-api-key",
+    model_name="your-model-name",
 )
 
-# Crear un agente
 agent = Agent(model=model)
+response = agent.run("What is the capital of Spain?")
 
-# Ejecutar una consulta
-response = agent.run("¿Cuál es la capital de España?")
+print(response)
 ```
 
-## 📁 Estructura del Proyecto
+## Streaming
 
+```python
+for chunk in agent.stream("Explain machine learning in one paragraph."):
+    print(chunk, end="")
 ```
+
+## Custom Model Adapter
+
+```python
+from typing import Iterator
+
+from SEJO_SDK.model import ModelClient
+
+
+class EchoModel(ModelClient):
+    def send_prompt(self, prompt: str, **kwargs) -> str:
+        return f"Echo: {prompt}"
+
+    def stream_response(self, prompt: str, **kwargs) -> Iterator[str]:
+        yield "Echo: "
+        yield prompt
+```
+
+## Project Structure
+
+```text
 SEJO_SDK/
-├── models/           # Implementaciones de diferentes modelos
-│   ├── model_openai.py
-│   ├── model_anthropic.py
-│   ├── model_gemini.py
-│   └── model_deepseek.py
-├── agent.py          # Implementación del agente
-├── model.py          # Clase base Model
-└── memory.py         # Sistema de memoria
+  agent.py                  Agent runtime.
+  memory.py                 Conversation memory.
+  model.py                  Provider-agnostic model interface.
+  models/                   OpenAI, Anthropic, Gemini and DeepSeek adapters.
+  tools/                    Tool primitives and optional integrations.
+  utils/                    Utility helpers and database connector.
+tests/                      Unit tests without live provider calls.
 ```
 
-## 🔧 Contribución
+## Quality
 
-¡Nos encantaría que contribuyas a SEJO SDK! Para hacerlo:
+```bash
+python -m compileall SEJO_SDK tests
+ruff check .
+pytest --cov=SEJO_SDK --cov-report=term-missing
+```
 
-1. Haz un Fork del repositorio
-2. Crea una rama para tu característica (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
+## Roadmap
 
-## 📄 Licencia
+- Add async model clients.
+- Add tool-calling orchestration.
+- Add provider-specific integration tests behind opt-in environment variables.
+- Add typed message objects for system/developer/tool messages.
+- Publish generated API documentation.
 
-Este proyecto está bajo la Licencia MIT. Consulta el archivo LICENSE para más detalles.
-
-## 👥 Contacto
+## Contact
 
 - GitHub: [jmiguelmangas](https://github.com/jmiguelmangas)
-- Email: jmmangas@gmail.com
+- Email: [jmmangas@gmail.com](mailto:jmmangas@gmail.com)
 
-## 🙏 Agradecimientos
+## License
 
-- A todos los contribuidores que han ayudado a hacer este proyecto mejor
-- A la comunidad open source por su apoyo continuo
-
----
-
-Hecho con ❤️ por [Jose Miguel Mangas](https://github.com/jmiguelmangas)
+MIT. See [LICENSE](LICENSE).

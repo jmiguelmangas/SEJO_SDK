@@ -21,9 +21,12 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+.coverage
+htmlcov/
 
 # Virtual Environment
 venv/
+.venv/
 ENV/
 
 # IDE

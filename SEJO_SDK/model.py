@@ -1,14 +1,25 @@
+"""Provider-agnostic model client interface."""
+
 from abc import ABC, abstractmethod
-from typing import Iterator, Dict, Any
+from collections.abc import Iterator
+from typing import Any
 
 
-class Model_client(ABC):
+class ModelClient(ABC):
+    """Base class for model adapters used by agents."""
+
     @abstractmethod
     def send_prompt(self, prompt: str, **kwargs: Any) -> str:
         """Send a prompt to the model and return the response."""
-        pass
+
+        raise NotImplementedError
+
     @abstractmethod
     def stream_response(self, prompt: str, **kwargs: Any) -> Iterator[str]:
         """Send a prompt to the model and return the response as a stream."""
-        pass
-        
+
+        raise NotImplementedError
+
+
+# Backwards-compatible alias for older imports.
+Model_client = ModelClient
