@@ -277,17 +277,25 @@ twine check dist/*
 
 ## Documentation
 
-Extended documentation lives in [`docs/`](docs/README.md):
+Extended documentation lives in [`docs/`](docs/index.md):
 
 - [Getting Started](docs/getting-started.md)
 - [Core Concepts](docs/concepts.md)
+- [Memory](docs/memory.md)
+- [Providers](docs/providers.md)
+- [Errors](docs/errors.md)
+- [CLI](docs/cli.md)
+- [Examples](docs/examples.md)
+- [Testing](docs/testing.md)
+- [API Reference](docs/api-reference.md)
+- [Release Checklist](docs/release-checklist.md)
+
+**Guides:**
+
 - [Sync Agents](docs/guides/sync-agents.md)
 - [Async Agents](docs/guides/async-agents.md)
 - [Native Messages](docs/guides/native-messages.md)
 - [Tools](docs/guides/tools.md)
-- [Providers](docs/providers.md)
-- [API Reference](docs/api-reference.md)
-- [Release Checklist](docs/release-checklist.md)
 
 Run the docs site locally:
 
