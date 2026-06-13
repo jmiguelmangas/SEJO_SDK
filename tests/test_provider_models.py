@@ -87,17 +87,17 @@ class FakeGeminiClient:
         self.calls = []
         self.chunks = chunks or []
 
-    def generate_content(self, prompt, **kwargs):
-        self.calls.append((prompt, kwargs))
+    def generate_content(self, prompt=None, *, contents=None, **kwargs):
+        self.calls.append((prompt or contents, kwargs))
         if kwargs.get("stream"):
             return self.chunks
-        return SimpleNamespace(text="gemini response")
+        return SimpleNamespace(text="gemini response", candidates=[])
 
-    async def generate_content_async(self, prompt, **kwargs):
-        self.calls.append((prompt, kwargs))
+    async def generate_content_async(self, prompt=None, *, contents=None, **kwargs):
+        self.calls.append((prompt or contents, kwargs))
         if kwargs.get("stream"):
             return self._stream_chunks()
-        return SimpleNamespace(text="async gemini")
+        return SimpleNamespace(text="async gemini", candidates=[])
 
     async def _stream_chunks(self):
         for chunk in self.chunks:
@@ -246,7 +246,7 @@ def test_gemini_model_sends_and_streams_content():
     client = FakeGeminiClient(chunks=chunks)
     model = GeminiModel(api_key="test", model_name="gemini", client=client)
 
-    assert model.send_prompt("Hello") == "gemini response"
+    assert model.send_prompt("Hello").content == "gemini response"
     assert list(model.stream_response("Hello")) == ["ge", "mini"]
 
 
@@ -254,8 +254,12 @@ def test_gemini_model_sends_native_messages_as_prompt():
     client = FakeGeminiClient()
     model = GeminiModel(api_key="test", model_name="gemini", client=client)
 
-    assert model.send_messages([system_message("Rules"), user_message("Hello")])
-    assert client.calls[0][0] == "system: Rules\nuser: Hello"
+    result = model.send_messages([system_message("Rules"), user_message("Hello")])
+    assert result.content == "gemini response"
+    # System message is injected into first user turn, not passed as-is
+    contents = client.calls[0][0]
+    assert isinstance(contents, list)
+    assert "[System]" in contents[0]["parts"][0]["text"]
 
 
 def test_async_gemini_model_sends_and_streams_content():
@@ -268,7 +272,7 @@ def test_async_gemini_model_sends_and_streams_content():
         client = FakeGeminiClient(chunks=chunks)
         model = AsyncGeminiModel(api_key="test", model_name="gemini", client=client)
 
-        assert await model.send_prompt("Hello") == "async gemini"
+        assert (await model.send_prompt("Hello")).content == "async gemini"
 
         streamed = []
         async for chunk in model.stream_response("Hello"):
@@ -288,8 +292,10 @@ def test_async_gemini_model_sends_native_messages_as_prompt():
             [system_message("Rules"), user_message("Hello")]
         )
 
-        assert response
-        assert client.calls[0][0] == "system: Rules\nuser: Hello"
+        assert response.content == "async gemini"
+        contents = client.calls[0][0]
+        assert isinstance(contents, list)
+        assert "[System]" in contents[0]["parts"][0]["text"]
 
     asyncio.run(exercise())
 

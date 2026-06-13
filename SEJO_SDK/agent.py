@@ -221,6 +221,56 @@ class Agent:
             yield chunk
         self.memory.add_ai_message("".join(chunks))
 
+    def as_tool(self, name: str, description: str, param: str = "task") -> "Tool":
+        """Return a Tool that delegates to this agent.
+
+        Use this to compose agents: pass the returned Tool to another Agent's
+        ``tools`` list so the orchestrator can call this agent as a sub-task.
+
+        Example::
+
+            researcher = Agent(model=..., system_prompt="Research specialist")
+            orchestrator = Agent(
+                model=...,
+                tools=[researcher.as_tool("research", "Research a topic")]
+            )
+            result = orchestrator.run_with_tools("Write a report on AI in aviation")
+        """
+        agent_ref = self
+
+        def _run(**kwargs: Any) -> str:
+            task = str(kwargs.get(param, next(iter(kwargs.values()), "")))
+            return agent_ref.run(task)
+
+        async def _arun(**kwargs: Any) -> str:
+            task = str(kwargs.get(param, next(iter(kwargs.values()), "")))
+            return await agent_ref.arun(task)
+
+        return Tool(
+            name=name,
+            description=description,
+            func=_run,
+            afunc=_arun,
+            parameters={
+                "type": "object",
+                "properties": {
+                    param: {
+                        "type": "string",
+                        "description": f"The task to send to the {name} agent.",
+                    }
+                },
+                "required": [param],
+            },
+        )
+
+    def delegate(self, other: "Agent", task: str) -> str:
+        """Directly run a task on another agent and return its response."""
+        return other.run(task)
+
+    async def adelegate(self, other: "Agent", task: str) -> str:
+        """Async version of delegate."""
+        return await other.arun(task)
+
     def run_tool(self, name: str, **arguments):
         """Run a registered tool by name."""
         tool = self._get_tool(name)

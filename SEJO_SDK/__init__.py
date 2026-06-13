@@ -33,7 +33,12 @@ from SEJO_SDK.resilience import (
     FallbackModel,
     RetryModel,
 )
-from SEJO_SDK.sessions import InMemorySessionStore, Session, SessionStore
+from SEJO_SDK.sessions import (
+    InMemorySessionStore,
+    PostgresSessionStore,
+    Session,
+    SessionStore,
+)
 from SEJO_SDK.structured import parse_structured, schema_prompt
 from SEJO_SDK.tools import Tool
 from SEJO_SDK.tracing import Tracer, TraceSummary, Turn
@@ -66,6 +71,7 @@ __all__ = [
     "Session",
     "SessionStore",
     "InMemorySessionStore",
+    "PostgresSessionStore",
     "PromptTemplate",
     "dedent_template",
     "RetryModel",
